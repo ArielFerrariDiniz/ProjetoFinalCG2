@@ -31,7 +31,7 @@ public class Main extends SimpleApplication {
         geom.setMaterial(mat);
 
         rootNode.attachChild(geom);
-        
+        //teste
         center();
     }
     
