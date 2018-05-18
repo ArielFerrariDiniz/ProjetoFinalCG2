@@ -2,28 +2,30 @@ package mygame;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.font.BitmapText;
+import com.jme3.input.KeyInput;
+import com.jme3.input.controls.ActionListener;
+import com.jme3.input.controls.KeyTrigger;
 import com.jme3.light.AmbientLight;
 import com.jme3.light.DirectionalLight;
-import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;
-import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
-import com.jme3.scene.shape.Box;
 
 /**
  * This is the Main Class of your Game. You should only do initialization here.
  * Move your Logic into AppStates or Controls
  * @author normenhansen
  */
-public class Main extends SimpleApplication {
+public class Main extends SimpleApplication implements ActionListener{
 
     public static void main(String[] args) {
         Main app = new Main();
         app.showSettings = false;
         app.start();
     }
+    
+    private boolean tiro=false;
 
     @Override
     public void simpleInitApp() {
@@ -32,6 +34,7 @@ public class Main extends SimpleApplication {
         center();
         CreateDart();
         createLigth();
+        initKeys();
         
     }
     
@@ -79,15 +82,33 @@ public class Main extends SimpleApplication {
         dart.scale(0.02f);
         dart.rotate(0,0,0);
         dart.setLocalTranslation(-0.5f,-0.6f,+8);
+        dart.setName("Dart");
         rootNode.attachChild(dart);
     }
+    
+    private void initKeys() {
+        inputManager.addMapping("Tiro", new KeyTrigger(KeyInput.KEY_SPACE));
+
+        inputManager.addListener(this, "Tiro");
+    }
+    @Override
     public void simpleUpdate(float tpf) {
-        //TODO: add update code
+        if(tiro){
+            rootNode.getChild("Dart").move(0,0,-0.05f);
+        }
+            
     }
     
 
     @Override
     public void simpleRender(RenderManager rm) {
         //TODO: add render code
+    }
+
+    @Override
+    public void onAction(String name, boolean isPressed, float tpf) {
+        if(isPressed && name.equals("Tiro"))
+            tiro = true;
+        
     }
 }
