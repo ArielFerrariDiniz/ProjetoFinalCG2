@@ -7,10 +7,16 @@ import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.light.AmbientLight;
 import com.jme3.light.DirectionalLight;
+import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;
+import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
+import com.jme3.scene.shape.Box;
+import com.jme3.texture.Texture;
+import java.util.ArrayList;
+import java.util.Random;
 
 /**
  * This is the Main Class of your Game. You should only do initialization here.
@@ -26,15 +32,27 @@ public class Main extends SimpleApplication implements ActionListener{
     }
     
     private boolean tiro=false;
+    private ArrayList<Spatial> alvos = new ArrayList<>();
 
     @Override
     public void simpleInitApp() {
+        
+        Box box = new Box(25, 15, 0);
+        Geometry geom = new Geometry("Box", box);
+        Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        Texture t = assetManager.loadTexture("Texture/Madeira.jpg");
+        mat.setTexture("ColorMap", t);
+        geom.setMaterial(mat);
+        rootNode.attachChild(geom); 
+        
+        rootNode.getChild("Box").setLocalTranslation(0, 0, -40);
         
         
         center();
         CreateDart();
         createLigth();
         initKeys();
+        CreateAlvo();
         
     }
     
@@ -78,12 +96,44 @@ public class Main extends SimpleApplication implements ActionListener{
     }
     public void CreateDart()
     {
-        Spatial dart = assetManager.loadModel("folder/dart.obj");
+        Spatial dart = assetManager.loadModel("Dart/dart.obj");
         dart.scale(0.02f);
         dart.rotate(0,0,0);
         dart.setLocalTranslation(-0.5f,-0.6f,+8);
         dart.setName("Dart");
+        Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        Texture t = assetManager.loadTexture("Dart/Untitled picture.png");
+        mat.setTexture("ColorMap", t);
+        dart.setMaterial(mat);
+        //mat.setColor("Color", ColorRGBA.Blue);
+        dart.setMaterial(mat);
         rootNode.attachChild(dart);
+    }
+    
+    public void CreateAlvo()
+    {
+        Random r = new Random();
+        int posX = r.nextInt(12);
+        int altera = r.nextInt(12);
+        int posY = r.nextInt(7);
+        int altera1 = r.nextInt(7);
+        
+        
+        Spatial dartt = assetManager.loadModel("Target/Target.obj");
+        dartt.scale(0.005f);
+        dartt.rotate(0,0,0);
+        dartt.setLocalTranslation(posX - altera, posY - altera1, -20);
+        dartt.setName("Target");
+        Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        Texture t = assetManager.loadTexture("Target/Target.jpg");
+        mat.setTexture("ColorMap", t);
+        //mat.setColor("Color", ColorRGBA.Blue);
+        dartt.setMaterial(mat);
+        rootNode.attachChild(dartt);
+        
+        alvos.add(dartt);
+        
+        
     }
     
     private void initKeys() {
@@ -94,7 +144,7 @@ public class Main extends SimpleApplication implements ActionListener{
     @Override
     public void simpleUpdate(float tpf) {
         if(tiro){
-            rootNode.getChild("Dart").move(0,0,-0.05f);
+            rootNode.getChild("Dart").move(0,0,tpf*-5f);
         }
             
     }
