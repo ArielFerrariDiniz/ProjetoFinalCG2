@@ -1,6 +1,10 @@
 package mygame;
 
 import com.jme3.app.SimpleApplication;
+import com.jme3.bullet.BulletAppState;
+import com.jme3.bullet.collision.PhysicsCollisionEvent;
+import com.jme3.bullet.collision.PhysicsCollisionListener;
+import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.font.BitmapText;
 import com.jme3.input.KeyInput;
 import com.jme3.input.controls.ActionListener;
@@ -17,13 +21,15 @@ import com.jme3.scene.shape.Box;
 import com.jme3.texture.Texture;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * This is the Main Class of your Game. You should only do initialization here.
  * Move your Logic into AppStates or Controls
  * @author normenhansen
  */
-public class Main extends SimpleApplication implements ActionListener{
+public class Main extends SimpleApplication implements PhysicsCollisionListener, ActionListener{
 
     public static void main(String[] args) {
         Main app = new Main();
@@ -32,28 +38,27 @@ public class Main extends SimpleApplication implements ActionListener{
     }
     
     private boolean tiro=false;
-    private ArrayList<Spatial> alvos = new ArrayList<>();
+    private BulletAppState state;
+    private RigidBodyControl wallRigidBody;
+    private RigidBodyControl targetRigidBody;
+    private RigidBodyControl dartRigidBody;
 
     @Override
-    public void simpleInitApp() {
+    public void simpleInitApp() {  
         
-        Box box = new Box(25, 15, 0);
-        Geometry geom = new Geometry("Box", box);
-        Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        Texture t = assetManager.loadTexture("Texture/Madeira.jpg");
-        mat.setTexture("ColorMap", t);
-        geom.setMaterial(mat);
-        rootNode.attachChild(geom); 
-        
-        rootNode.getChild("Box").setLocalTranslation(0, 0, -40);
-        
-        
+        criarFisica();
+        createWall();
         center();
         CreateDart();
         createLigth();
         initKeys();
-        CreateAlvo();
-        
+    }
+
+    private void criarFisica() {
+        state = new BulletAppState();
+        state.setDebugEnabled(true);
+        stateManager.attach(state);
+        state.getPhysicsSpace().addCollisionListener(this);
     }
     
     private void createLigth() {
@@ -79,6 +84,25 @@ public class Main extends SimpleApplication implements ActionListener{
         rootNode.addLight(ambient);
 
     }
+    
+    private void createWall(){
+        Box box = new Box(20, 12, 0);
+        Geometry geom = new Geometry("Wall", box);
+        Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        Texture t = assetManager.loadTexture("Texture/Madeira.jpg");
+        mat.setTexture("ColorMap", t);
+        geom.setMaterial(mat);
+        
+        wallRigidBody = new RigidBodyControl(0);
+        geom.addControl(wallRigidBody);
+        state.getPhysicsSpace().add(wallRigidBody);
+        rootNode.attachChild(geom);
+        
+        geom.setLocalTranslation(0, 0, -30);
+        wallRigidBody.setPhysicsLocation(geom.getLocalTranslation());
+        
+    }
+    
     public void center(){
         
         guiNode.detachAllChildren();
@@ -107,19 +131,34 @@ public class Main extends SimpleApplication implements ActionListener{
         dart.setMaterial(mat);
         //mat.setColor("Color", ColorRGBA.Blue);
         dart.setMaterial(mat);
+        
+        dartRigidBody = new RigidBodyControl(0);
+        dart.addControl(dartRigidBody);
+        state.getPhysicsSpace().add(dartRigidBody);
         rootNode.attachChild(dart);
+        
+        dartRigidBody.setPhysicsLocation(dart.getLocalTranslation());
     }
     
     public void CreateAlvo()
     {
         Random r = new Random();
-        int posX = r.nextInt(12);
-        int altera = r.nextInt(12);
-        int posY = r.nextInt(7);
-        int altera1 = r.nextInt(7);
+        int posX = r.nextInt(9);
+        int altera = r.nextInt(9);
+        int posY = r.nextInt(5);
+        int altera1 = r.nextInt(5);
         
+        Box box = new Box(1, 1, 0);
+        Geometry geom = new Geometry("Target", box);
+        Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        Texture t = assetManager.loadTexture("Target/Target.jpg");
+        mat.setTexture("ColorMap", t);
+        geom.setMaterial(mat);
+        rootNode.attachChild(geom); 
         
-        Spatial dartt = assetManager.loadModel("Target/Target.obj");
+        rootNode.getChild("Target").setLocalTranslation(posX - altera, posY - altera1, -29);
+        
+        /*Spatial dartt = assetManager.loadModel("Target/Target.obj");
         dartt.scale(0.005f);
         dartt.rotate(0,0,0);
         dartt.setLocalTranslation(posX - altera, posY - altera1, -20);
@@ -129,9 +168,7 @@ public class Main extends SimpleApplication implements ActionListener{
         mat.setTexture("ColorMap", t);
         //mat.setColor("Color", ColorRGBA.Blue);
         dartt.setMaterial(mat);
-        rootNode.attachChild(dartt);
-        
-        alvos.add(dartt);
+        rootNode.attachChild(dartt);*/
         
         
     }
@@ -144,8 +181,16 @@ public class Main extends SimpleApplication implements ActionListener{
     @Override
     public void simpleUpdate(float tpf) {
         if(tiro){
-            rootNode.getChild("Dart").move(0,0,tpf*-5f);
+            rootNode.getChild("Dart").move(0,0,tpf*-35f);
+            dartRigidBody.setPhysicsLocation(rootNode.getChild("Dart").getLocalTranslation());
         }
+        
+        com.jme3.system.Timer tempo = getTimer();
+        if(tempo.getTimeInSeconds() > 2){
+            rootNode.detachChildNamed("Target");
+            CreateAlvo();
+            tempo.reset();
+        }     
             
     }
     
@@ -160,5 +205,13 @@ public class Main extends SimpleApplication implements ActionListener{
         if(isPressed && name.equals("Tiro"))
             tiro = true;
         
+    }
+
+    @Override
+    public void collision(PhysicsCollisionEvent event) {
+        if (event.getNodeA().getName().equals("Wall") && event.getNodeB().getName().equals("Dart") || event.getNodeA().getName().equals("Dart") && event.getNodeB().getName().equals("Wall")) {
+            rootNode.detachChildNamed("Dart");
+            CreateDart();
+        }
     }
 }
