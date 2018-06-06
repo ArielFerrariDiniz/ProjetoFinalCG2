@@ -27,25 +27,26 @@ import java.util.TimerTask;
 /**
  * This is the Main Class of your Game. You should only do initialization here.
  * Move your Logic into AppStates or Controls
+ *
  * @author normenhansen
  */
-public class Main extends SimpleApplication implements PhysicsCollisionListener, ActionListener{
+public class Main extends SimpleApplication implements PhysicsCollisionListener, ActionListener {
 
     public static void main(String[] args) {
         Main app = new Main();
         app.showSettings = false;
         app.start();
     }
-    
-    private boolean tiro=false;
+
+    private boolean tiro = false;
     private BulletAppState state;
     private RigidBodyControl wallRigidBody;
     private RigidBodyControl targetRigidBody;
     private RigidBodyControl dartRigidBody;
 
     @Override
-    public void simpleInitApp() {  
-        
+    public void simpleInitApp() {
+
         criarFisica();
         createWall();
         center();
@@ -60,7 +61,7 @@ public class Main extends SimpleApplication implements PhysicsCollisionListener,
         stateManager.attach(state);
         state.getPhysicsSpace().addCollisionListener(this);
     }
-    
+
     private void createLigth() {
 
         DirectionalLight l1 = new DirectionalLight();
@@ -84,46 +85,46 @@ public class Main extends SimpleApplication implements PhysicsCollisionListener,
         rootNode.addLight(ambient);
 
     }
-    
-    private void createWall(){
+
+    private void createWall() {
         Box box = new Box(20, 12, 0);
         Geometry geom = new Geometry("Wall", box);
         Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
         Texture t = assetManager.loadTexture("Texture/Madeira.jpg");
         mat.setTexture("ColorMap", t);
         geom.setMaterial(mat);
-        
+
         wallRigidBody = new RigidBodyControl(0);
         geom.addControl(wallRigidBody);
         state.getPhysicsSpace().add(wallRigidBody);
         rootNode.attachChild(geom);
-        
+
         geom.setLocalTranslation(0, 0, -30);
         wallRigidBody.setPhysicsLocation(geom.getLocalTranslation());
-        
+
     }
-    
-    public void center(){
-        
+
+    public void center() {
+
         guiNode.detachAllChildren();
-        
+
         guiFont = assetManager.loadFont("Interface/Fonts/Default.fnt");
         BitmapText center = new BitmapText(guiFont, false);
-        
+
         center.setSize(guiFont.getCharSet().getRenderedSize());
         center.setText("+");
         center.setLocalTranslation(
-                    settings.getWidth()/2 - guiFont.getCharSet().getRenderedSize()/2,
-                    settings.getHeight()/2 + center.getLineHeight()/2, 0);
-        
+                settings.getWidth() / 2 - guiFont.getCharSet().getRenderedSize() / 2,
+                settings.getHeight() / 2 + center.getLineHeight() / 2, 0);
+
         guiNode.attachChild(center);
     }
-    public void CreateDart()
-    {
+
+    public void CreateDart() {
         Spatial dart = assetManager.loadModel("Dart/dart.obj");
         dart.scale(0.02f);
-        dart.rotate(0,0,0);
-        dart.setLocalTranslation(-0.5f,-0.6f,+8);
+        dart.rotate(0, 0, 0);
+        dart.setLocalTranslation(-0.5f, -0.6f, +8);
         dart.setName("Dart");
         Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
         Texture t = assetManager.loadTexture("Dart/Untitled picture.png");
@@ -131,33 +132,32 @@ public class Main extends SimpleApplication implements PhysicsCollisionListener,
         dart.setMaterial(mat);
         //mat.setColor("Color", ColorRGBA.Blue);
         dart.setMaterial(mat);
-        
+
         dartRigidBody = new RigidBodyControl(0);
         dart.addControl(dartRigidBody);
         state.getPhysicsSpace().add(dartRigidBody);
         rootNode.attachChild(dart);
-        
+
         dartRigidBody.setPhysicsLocation(dart.getLocalTranslation());
     }
-    
-    public void CreateAlvo()
-    {
+
+    public void CreateAlvo() {
         Random r = new Random();
         int posX = r.nextInt(9);
         int altera = r.nextInt(9);
         int posY = r.nextInt(5);
         int altera1 = r.nextInt(5);
-        
+
         Box box = new Box(1, 1, 0);
         Geometry geom = new Geometry("Target", box);
         Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
         Texture t = assetManager.loadTexture("Target/Target.jpg");
         mat.setTexture("ColorMap", t);
         geom.setMaterial(mat);
-        rootNode.attachChild(geom); 
-        
+        rootNode.attachChild(geom);
+
         rootNode.getChild("Target").setLocalTranslation(posX - altera, posY - altera1, -29);
-        
+
         /*Spatial dartt = assetManager.loadModel("Target/Target.obj");
         dartt.scale(0.005f);
         dartt.rotate(0,0,0);
@@ -169,31 +169,35 @@ public class Main extends SimpleApplication implements PhysicsCollisionListener,
         //mat.setColor("Color", ColorRGBA.Blue);
         dartt.setMaterial(mat);
         rootNode.attachChild(dartt);*/
-        
-        
     }
-    
+
     private void initKeys() {
         inputManager.addMapping("Tiro", new KeyTrigger(KeyInput.KEY_SPACE));
 
         inputManager.addListener(this, "Tiro");
     }
+
     @Override
     public void simpleUpdate(float tpf) {
-        if(tiro){
-            rootNode.getChild("Dart").move(0,0,tpf*-35f);
+        if (tiro) {
+            rootNode.getChild("Dart").move(0, 0, tpf * -35f);
             dartRigidBody.setPhysicsLocation(rootNode.getChild("Dart").getLocalTranslation());
+             if(rootNode.getChild("Dart").getLocalTranslation().z<-30)
+            {
+                rootNode.getChild("Dart").setName(null);
+                tiro=false;
+                CreateDart();
+            }
         }
-        
+
         com.jme3.system.Timer tempo = getTimer();
-        if(tempo.getTimeInSeconds() > 2){
+        if (tempo.getTimeInSeconds() > 2) {
             rootNode.detachChildNamed("Target");
             CreateAlvo();
             tempo.reset();
-        }     
-            
+        }
+
     }
-    
 
     @Override
     public void simpleRender(RenderManager rm) {
@@ -202,9 +206,10 @@ public class Main extends SimpleApplication implements PhysicsCollisionListener,
 
     @Override
     public void onAction(String name, boolean isPressed, float tpf) {
-        if(isPressed && name.equals("Tiro"))
+        if (isPressed && name.equals("Tiro")) {
             tiro = true;
-        
+        }
+
     }
 
     @Override
