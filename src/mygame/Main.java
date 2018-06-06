@@ -39,6 +39,10 @@ public class Main extends SimpleApplication implements PhysicsCollisionListener,
     }
 
     private boolean tiro = false;
+    private boolean Up = false;
+     private boolean Down= false;
+      private boolean Left = false;
+       private boolean Right = false;
     private BulletAppState state;
     private RigidBodyControl wallRigidBody;
     private RigidBodyControl targetRigidBody;
@@ -175,6 +179,23 @@ public class Main extends SimpleApplication implements PhysicsCollisionListener,
         inputManager.addMapping("Tiro", new KeyTrigger(KeyInput.KEY_SPACE));
 
         inputManager.addListener(this, "Tiro");
+        
+        
+        inputManager.addMapping("Up", new KeyTrigger(KeyInput.KEY_T));
+
+        inputManager.addListener(this, "Up");
+        
+        inputManager.addMapping("Down", new KeyTrigger(KeyInput.KEY_F));
+
+        inputManager.addListener(this, "Down");
+        
+        inputManager.addMapping("Left", new KeyTrigger(KeyInput.KEY_H));
+
+        inputManager.addListener(this, "Left");
+        
+        inputManager.addMapping("Right", new KeyTrigger(KeyInput.KEY_G));
+
+        inputManager.addListener(this, "Right");
     }
 
     @Override
@@ -188,6 +209,36 @@ public class Main extends SimpleApplication implements PhysicsCollisionListener,
                 tiro=false;
                 CreateDart();
             }
+        }
+        
+        if(Up)
+        {
+            
+            rootNode.getChild("Dart").setLocalTranslation(rootNode.getChild("Dart").getLocalTranslation().x, rootNode.getChild("Dart").getLocalTranslation().y +0.01f,rootNode.getChild("Dart").getLocalTranslation().z);
+            Up=false;
+        }
+        
+          
+        if(Down)
+        {
+            
+            rootNode.getChild("Dart").setLocalTranslation(rootNode.getChild("Dart").getLocalTranslation().x, rootNode.getChild("Dart").getLocalTranslation().y -0.01f,rootNode.getChild("Dart").getLocalTranslation().z);
+            Down=false;
+        }
+          
+        if(Left)
+        {
+            
+            rootNode.getChild("Dart").setLocalTranslation(rootNode.getChild("Dart").getLocalTranslation().x+0.01f, rootNode.getChild("Dart").getLocalTranslation().y ,rootNode.getChild("Dart").getLocalTranslation().z);
+            Left = false;
+        }
+        
+          
+        if(Right)
+        {
+            
+            rootNode.getChild("Dart").setLocalTranslation(rootNode.getChild("Dart").getLocalTranslation().x-0.01f, rootNode.getChild("Dart").getLocalTranslation().y ,rootNode.getChild("Dart").getLocalTranslation().z);
+            Right = false;
         }
 
         com.jme3.system.Timer tempo = getTimer();
@@ -208,6 +259,20 @@ public class Main extends SimpleApplication implements PhysicsCollisionListener,
     public void onAction(String name, boolean isPressed, float tpf) {
         if (isPressed && name.equals("Tiro")) {
             tiro = true;
+        }
+        
+         if (isPressed && name.equals("Up")) {
+            Up = true;
+        }
+          if (isPressed && name.equals("Down")) {
+            Down = true;
+        }
+          
+           if (isPressed && name.equals("Left")) {
+            Left = true;
+        }
+            if (isPressed && name.equals("Right")) {
+            Right = true;
         }
 
     }
