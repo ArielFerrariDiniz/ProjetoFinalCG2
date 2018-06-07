@@ -13,10 +13,14 @@ import com.jme3.light.AmbientLight;
 import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
+import com.jme3.math.FastMath;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;
+import com.jme3.scene.CameraNode;
 import com.jme3.scene.Geometry;
+import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
+import com.jme3.scene.control.CameraControl;
 import com.jme3.scene.shape.Box;
 import com.jme3.texture.Texture;
 import java.util.ArrayList;
@@ -40,9 +44,10 @@ public class Main extends SimpleApplication implements PhysicsCollisionListener,
 
     private boolean tiro = false;
     private boolean Up = false;
-     private boolean Down= false;
-      private boolean Left = false;
-       private boolean Right = false;
+    private boolean Down = false;
+    private boolean Left = false;
+    private boolean Right = false;
+    private Node pai = new Node();
     private BulletAppState state;
     private RigidBodyControl wallRigidBody;
     private RigidBodyControl targetRigidBody;
@@ -57,8 +62,21 @@ public class Main extends SimpleApplication implements PhysicsCollisionListener,
         CreateDart();
         createLigth();
         initKeys();
+        CreateCam();
     }
+private void CreateCam()
+{
+    CameraNode camNode = new CameraNode("CamNode", cam);
+         camNode.setControlDir(CameraControl.ControlDirection.SpatialToCamera);
+         camNode.setLocalTranslation(new Vector3f(0,0,0));
 
+        camNode.lookAt(pai.getChild("Dart").getLocalTranslation(), Vector3f.UNIT_Y);
+        pai.attachChild(camNode);
+        //pai.getChild("CamNode").rotate(FastMath.PI,0.1f,0);
+        pai.getChild("CamNode").rotate(0.1f,FastMath.PI,0);
+        pai.getChild("CamNode").setLocalTranslation(0, 0, 20);
+    
+}
     private void criarFisica() {
         state = new BulletAppState();
         state.setDebugEnabled(true);
@@ -91,7 +109,7 @@ public class Main extends SimpleApplication implements PhysicsCollisionListener,
     }
 
     private void createWall() {
-        Box box = new Box(20, 12, 0);
+        Box box = new Box(20, 14, 0);
         Geometry geom = new Geometry("Wall", box);
         Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
         Texture t = assetManager.loadTexture("Texture/Madeira.jpg");
@@ -103,7 +121,7 @@ public class Main extends SimpleApplication implements PhysicsCollisionListener,
         state.getPhysicsSpace().add(wallRigidBody);
         rootNode.attachChild(geom);
 
-        geom.setLocalTranslation(0, 0, -30);
+        geom.setLocalTranslation(0, 0, -5);
         wallRigidBody.setPhysicsLocation(geom.getLocalTranslation());
 
     }
@@ -125,6 +143,7 @@ public class Main extends SimpleApplication implements PhysicsCollisionListener,
     }
 
     public void CreateDart() {
+
         Spatial dart = assetManager.loadModel("Dart/dart.obj");
         dart.scale(0.02f);
         dart.rotate(0, 0, 0);
@@ -140,9 +159,13 @@ public class Main extends SimpleApplication implements PhysicsCollisionListener,
         dartRigidBody = new RigidBodyControl(0);
         dart.addControl(dartRigidBody);
         state.getPhysicsSpace().add(dartRigidBody);
-        rootNode.attachChild(dart);
+        rootNode.attachChild(pai);
+        pai.attachChild(dart);
 
         dartRigidBody.setPhysicsLocation(dart.getLocalTranslation());
+
+        
+
     }
 
     public void CreateAlvo() {
@@ -160,7 +183,7 @@ public class Main extends SimpleApplication implements PhysicsCollisionListener,
         geom.setMaterial(mat);
         rootNode.attachChild(geom);
 
-        rootNode.getChild("Target").setLocalTranslation(posX - altera, posY - altera1, -29);
+        rootNode.getChild("Target").setLocalTranslation(posX - altera, posY - altera1, -4.9f);
 
         /*Spatial dartt = assetManager.loadModel("Target/Target.obj");
         dartt.scale(0.005f);
@@ -179,21 +202,20 @@ public class Main extends SimpleApplication implements PhysicsCollisionListener,
         inputManager.addMapping("Tiro", new KeyTrigger(KeyInput.KEY_SPACE));
 
         inputManager.addListener(this, "Tiro");
-        
-        
+
         inputManager.addMapping("Up", new KeyTrigger(KeyInput.KEY_T));
 
         inputManager.addListener(this, "Up");
-        
-        inputManager.addMapping("Down", new KeyTrigger(KeyInput.KEY_F));
+
+        inputManager.addMapping("Down", new KeyTrigger(KeyInput.KEY_G));
 
         inputManager.addListener(this, "Down");
-        
-        inputManager.addMapping("Left", new KeyTrigger(KeyInput.KEY_H));
+
+        inputManager.addMapping("Left", new KeyTrigger(KeyInput.KEY_F));
 
         inputManager.addListener(this, "Left");
-        
-        inputManager.addMapping("Right", new KeyTrigger(KeyInput.KEY_G));
+
+        inputManager.addMapping("Right", new KeyTrigger(KeyInput.KEY_H));
 
         inputManager.addListener(this, "Right");
     }
@@ -203,46 +225,37 @@ public class Main extends SimpleApplication implements PhysicsCollisionListener,
         if (tiro) {
             rootNode.getChild("Dart").move(0, 0, tpf * -35f);
             dartRigidBody.setPhysicsLocation(rootNode.getChild("Dart").getLocalTranslation());
-             if(rootNode.getChild("Dart").getLocalTranslation().z<-30)
-            {
+            if (rootNode.getChild("Dart").getLocalTranslation().z < -30) {
                 rootNode.getChild("Dart").setName(null);
-                tiro=false;
+                tiro = false;
                 CreateDart();
             }
         }
         
+        pai.getChild("CamNode").lookAt(pai.getChild("Dart").getLocalTranslation(), Vector3f.UNIT_Y);
+        
         if(Up)
-        {
-            
-            rootNode.getChild("Dart").setLocalTranslation(rootNode.getChild("Dart").getLocalTranslation().x, rootNode.getChild("Dart").getLocalTranslation().y +0.01f,rootNode.getChild("Dart").getLocalTranslation().z);
-            Up=false;
-        }
-        
-          
-        if(Down)
-        {
-            
-            rootNode.getChild("Dart").setLocalTranslation(rootNode.getChild("Dart").getLocalTranslation().x, rootNode.getChild("Dart").getLocalTranslation().y -0.01f,rootNode.getChild("Dart").getLocalTranslation().z);
-            Down=false;
-        }
-          
-        if(Left)
-        {
-            
-            rootNode.getChild("Dart").setLocalTranslation(rootNode.getChild("Dart").getLocalTranslation().x+0.01f, rootNode.getChild("Dart").getLocalTranslation().y ,rootNode.getChild("Dart").getLocalTranslation().z);
-            Left = false;
-        }
-        
-          
-        if(Right)
-        {
-            
-            rootNode.getChild("Dart").setLocalTranslation(rootNode.getChild("Dart").getLocalTranslation().x-0.01f, rootNode.getChild("Dart").getLocalTranslation().y ,rootNode.getChild("Dart").getLocalTranslation().z);
-            Right = false;
-        }
+            {
+                rootNode.getChild("Dart").move(0,0.005f,0);
+            }
+
+         if(Down)
+            {
+                rootNode.getChild("Dart").move(0, -0.005f,0);
+            }
+          if(Right)
+            {
+                rootNode.getChild("Dart").move(0.005f,0,0);
+            }
+           if(Left)
+            {
+                rootNode.getChild("Dart").move(-0.005f,0,0);
+            }
+           
+       
 
         com.jme3.system.Timer tempo = getTimer();
-        if (tempo.getTimeInSeconds() > 2) {
+        if (tempo.getTimeInSeconds() > 3) {
             rootNode.detachChildNamed("Target");
             CreateAlvo();
             tempo.reset();
@@ -260,19 +273,30 @@ public class Main extends SimpleApplication implements PhysicsCollisionListener,
         if (isPressed && name.equals("Tiro")) {
             tiro = true;
         }
-        
-         if (isPressed && name.equals("Up")) {
-            Up = true;
+        if (!isPressed && name.equals("Up")) {
+            Up = false;
         }
-          if (isPressed && name.equals("Down")) {
+        if (isPressed && name.equals("Up")) {
+            Up = true;
+             
+        }
+        if (isPressed && name.equals("Down")) {
             Down = true;
         }
-          
-           if (isPressed && name.equals("Left")) {
+       if (!isPressed && name.equals("Down")) {
+            Down = false;
+        }
+        if (isPressed && name.equals("Left")) {
             Left = true;
         }
-            if (isPressed && name.equals("Right")) {
+         if (!isPressed && name.equals("Left")) {
+            Left = false;
+        }
+        if (isPressed && name.equals("Right")) {
             Right = true;
+        }
+         if (!isPressed && name.equals("Right")) {
+            Right = false;
         }
 
     }
@@ -285,3 +309,30 @@ public class Main extends SimpleApplication implements PhysicsCollisionListener,
         }
     }
 }
+
+
+
+
+/* while (Up) {
+
+            rootNode.getChild("Dart").setLocalTranslation(rootNode.getChild("Dart").getLocalTranslation().x, rootNode.getChild("Dart").getLocalTranslation().y + 0.01f, rootNode.getChild("Dart").getLocalTranslation().z);
+         
+        }
+
+        while (Down) {
+
+            rootNode.getChild("Dart").setLocalTranslation(rootNode.getChild("Dart").getLocalTranslation().x, rootNode.getChild("Dart").getLocalTranslation().y - 0.01f, rootNode.getChild("Dart").getLocalTranslation().z);
+            
+        }
+
+        while (Left) {
+
+            rootNode.getChild("Dart").setLocalTranslation(rootNode.getChild("Dart").getLocalTranslation().x + 0.01f, rootNode.getChild("Dart").getLocalTranslation().y, rootNode.getChild("Dart").getLocalTranslation().z);
+            
+        }
+
+        while (Right) {
+
+            rootNode.getChild("Dart").setLocalTranslation(rootNode.getChild("Dart").getLocalTranslation().x - 0.01f, rootNode.getChild("Dart").getLocalTranslation().y, rootNode.getChild("Dart").getLocalTranslation().z);
+          
+        }*/
