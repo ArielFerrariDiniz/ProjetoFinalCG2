@@ -36,6 +36,10 @@ public class Main extends SimpleApplication implements PhysicsCollisionListener,
     private boolean Down = false;
     private boolean Left = false;
     private boolean Right = false;
+    private boolean first = true;
+    private int time = 3;
+    private int quantidade = 1;
+    private int points = 120;
 
     public static void main(String[] args) {
         Main app = new Main();
@@ -51,7 +55,7 @@ public class Main extends SimpleApplication implements PhysicsCollisionListener,
         center();
         createWall();
         CreateDart(-0.48f, -0.65f, +8);
-        CreateAlvo();
+        CreateAlvo("Target", 19, 19, 13, 13);
         flyCam.setEnabled(paused);
     }
 
@@ -62,21 +66,30 @@ public class Main extends SimpleApplication implements PhysicsCollisionListener,
             rootNode.getChild("Dart").move(0, 0, tpf * -45f);
         
         if(Up && !tiro && rootNode.getChild("Dart").getLocalTranslation().y < 20)
-            rootNode.getChild("Dart").move(0,0.5f,0);
+            rootNode.getChild("Dart").move(0,tpf*15f,0);
         
         if(Down && !tiro && rootNode.getChild("Dart").getLocalTranslation().y > -20)
-            rootNode.getChild("Dart").move(0, -0.5f,0);
+            rootNode.getChild("Dart").move(0, tpf*-15f,0);
 
         if(Right && !tiro && rootNode.getChild("Dart").getLocalTranslation().x < 25)
-            rootNode.getChild("Dart").move(0.5f,0,0);
+            rootNode.getChild("Dart").move(tpf*15f,0,0);
 
         if(Left && !tiro && rootNode.getChild("Dart").getLocalTranslation().x > -25)
-            rootNode.getChild("Dart").move(-0.5f,0,0);
+            rootNode.getChild("Dart").move(tpf*-15f,0,0);
         
         dartRigidBody.setPhysicsLocation(rootNode.getChild("Dart").getLocalTranslation());
         
         Vector3f v = new Vector3f(rootNode.getChild("Dart").getLocalTranslation().x+0.48f, rootNode.getChild("Dart").getLocalTranslation().y+0.65f, 10);
         cam.setLocation(v);
+        
+        
+        if(points > 50 && points <= 100)
+            time = 2;
+        
+        if(points > 100){
+            time = 5;
+            quantidade = 2;
+        }
         
         if(rootNode.getChild("Dart").getLocalTranslation().z < -50){
             RigidBodyControl r = rootNode.getChild("Dart").getControl(RigidBodyControl.class);
@@ -88,11 +101,26 @@ public class Main extends SimpleApplication implements PhysicsCollisionListener,
         }
         
         com.jme3.system.Timer tempo = getTimer();
-        if (tempo.getTimeInSeconds() > 3) {
+        if (tempo.getTimeInSeconds() > time && quantidade == 1) {
             RigidBodyControl r = rootNode.getChild("Target").getControl(RigidBodyControl.class);
             state.getPhysicsSpace().remove(r);
             rootNode.detachChildNamed("Target");
-            CreateAlvo();
+            CreateAlvo("Target", 19, 19, 13, 13);
+            tempo.reset();
+        }
+        if (tempo.getTimeInSeconds() > time && quantidade == 2) {
+            RigidBodyControl r = rootNode.getChild("Target").getControl(RigidBodyControl.class);
+            state.getPhysicsSpace().remove(r);
+            rootNode.detachChildNamed("Target");
+            if(!first){
+                RigidBodyControl r1 = rootNode.getChild("Target1").getControl(RigidBodyControl.class);
+                state.getPhysicsSpace().remove(r1);
+                rootNode.detachChildNamed("Target1");
+            }
+            else
+                first = false;
+            CreateAlvo("Target", 19, 1, 13, 1);
+            CreateAlvo("Target1", 1, 19, 1, 13);
             tempo.reset();
         }
     }
@@ -179,7 +207,7 @@ public class Main extends SimpleApplication implements PhysicsCollisionListener,
     private void criarFisica() {
         state = new BulletAppState();
         stateManager.attach(state);
-        state.setDebugEnabled(true);
+        //state.setDebugEnabled(true);
         state.getPhysicsSpace().addCollisionListener(this);
     }
     
@@ -252,22 +280,22 @@ public class Main extends SimpleApplication implements PhysicsCollisionListener,
         tiro = false;
     }
     
-    public void CreateAlvo() {
+    public void CreateAlvo(String name, int x, int x1, int y, int y1) {
         Random r = new Random();
-        int posX = r.nextInt(9);
-        int altera = r.nextInt(9);
-        int posY = r.nextInt(6);
-        int altera1 = r.nextInt(6);
+        int posX = r.nextInt(x);
+        int altera = r.nextInt(x1);
+        int posY = r.nextInt(y);
+        int altera1 = r.nextInt(y1);
 
         Box box = new Box(1, 1, 1);
-        Geometry geom = new Geometry("Target", box);
+        Geometry geom = new Geometry(name, box);
         Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
         Texture t = assetManager.loadTexture("Target/Target.jpg");
         mat.setTexture("ColorMap", t);
         geom.setMaterial(mat);
         rootNode.attachChild(geom);
 
-        rootNode.getChild("Target").setLocalTranslation(posX - altera, posY - altera1, -34.8f);
+        rootNode.getChild(name).setLocalTranslation(posX - altera, posY - altera1, -34.8f);
         
         targetRigidBody = new RigidBodyControl(0);
         geom.addControl(targetRigidBody);
