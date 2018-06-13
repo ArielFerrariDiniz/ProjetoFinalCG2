@@ -22,6 +22,7 @@ import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
 import com.jme3.texture.Texture;
 import java.util.Random;
+import javafx.scene.text.Text;
 
 
 public class Main extends SimpleApplication implements PhysicsCollisionListener, ActionListener{
@@ -39,15 +40,19 @@ public class Main extends SimpleApplication implements PhysicsCollisionListener,
     private boolean first = true;
     private int time = 4;
     private int quantidade = 1;
-    private int points = 120;
+    private int points = 10;
     private Spatial Target1, Target;
+    private BitmapText texto ;
+    private  BitmapText pontos;
+    private boolean b = true;
+   
 
     public static void main(String[] args) {
         Main app = new Main();
         app.showSettings = false;
         app.start();
     }
-
+   
     @Override
     public void simpleInitApp() {
         createLigth();
@@ -57,11 +62,46 @@ public class Main extends SimpleApplication implements PhysicsCollisionListener,
         createWall();
         CreateDart(-0.48f, -0.65f, +8);
         CreateAlvo("Target", 19, 19, 13, 13);
+        
+        
+        
         flyCam.setEnabled(paused);
     }
 
     @Override
     public void simpleUpdate(float tpf) {
+        if(b){
+        texto = new BitmapText(guiFont,false);
+         pontos = new BitmapText(guiFont,false);
+         b=false;
+        }
+         rootNode.attachChild(texto);
+      rootNode.attachChild(pontos);
+    texto.setName("texto");
+    pontos.setName("pontos");
+    texto.setSize(10);      // font size
+    pontos.setSize(10); 
+    texto.setColor(ColorRGBA.White); 
+    pontos.setColor(ColorRGBA.White);    // font color
+    texto.setText("Points : ");     
+     pontos.setText(""+points);// the text
+     if(rootNode.getChild("Dart").getLocalTranslation().y >-2)
+     {
+    texto.setLocalTranslation(-30f,40f, -80f); // position
+    pontos.setLocalTranslation(10f, 40f,-80f);
+     }
+     else
+     {
+         texto.setLocalTranslation(-30f,-25f, -80f); // position
+        pontos.setLocalTranslation(10f, -25f,-80f);
+     }
+      
+      
+      
+            
+      
+      
+        
         dartRigidBody.activate();
         wallRigidBody.activate();
         targetRigidBody.activate();
@@ -104,8 +144,10 @@ public class Main extends SimpleApplication implements PhysicsCollisionListener,
             RigidBodyControl r = rootNode.getChild("Target").getControl(RigidBodyControl.class);
             state.getPhysicsSpace().remove(r);
             rootNode.detachChildNamed("Target");
+            
             CreateAlvo("Target", 19, 19, 13, 13);
             if(points > 0)
+                 
                     points -= 5;
             tempo.reset();
             first = true;
@@ -114,6 +156,7 @@ public class Main extends SimpleApplication implements PhysicsCollisionListener,
             RigidBodyControl r = rootNode.getChild("Target").getControl(RigidBodyControl.class);
             state.getPhysicsSpace().remove(r);
             rootNode.detachChildNamed("Target");
+             
             if(!first){
                 RigidBodyControl r1 = rootNode.getChild("Target1").getControl(RigidBodyControl.class);
                 state.getPhysicsSpace().remove(r1);
@@ -125,6 +168,7 @@ public class Main extends SimpleApplication implements PhysicsCollisionListener,
             CreateAlvo("Target1", 1, 19, 1, 13);
             if(points > 0)
                     points -= 10;
+             
             tempo.reset();
         }
         
@@ -134,12 +178,13 @@ public class Main extends SimpleApplication implements PhysicsCollisionListener,
             rootNode.detachChildNamed("Target1");
             if(points > 0)
                 points -= 5;
+             
         }
         
         if(!rootNode.hasChild(Target1) && quantidade == 2)
             CreateAlvo("Target1", 1, 19, 1, 13);
         
-        if(rootNode.getChild("Dart").getLocalTranslation().z < -50){
+        if(rootNode.getChild("Dart").getLocalTranslation().z < -35){
             RigidBodyControl r = rootNode.getChild("Dart").getControl(RigidBodyControl.class);
             state.getPhysicsSpace().remove(r);
             float x = rootNode.getChild("Dart").getLocalTranslation().x;
@@ -147,6 +192,7 @@ public class Main extends SimpleApplication implements PhysicsCollisionListener,
             rootNode.detachChildNamed("Dart");
             if(points > 0)
                 points -= 5;
+             
             CreateDart(x, y, 8);
         }
         
@@ -158,6 +204,7 @@ public class Main extends SimpleApplication implements PhysicsCollisionListener,
         {
             System.out.println("Dentroooooooo");
             points += 10;
+             
             RigidBodyControl r = rootNode.getChild("Dart").getControl(RigidBodyControl.class);
             state.getPhysicsSpace().remove(r);
             float x = rootNode.getChild("Dart").getLocalTranslation().x;
@@ -187,6 +234,7 @@ public class Main extends SimpleApplication implements PhysicsCollisionListener,
                     rootNode.getChild("Dart").getLocalTranslation().y+0.65 >= rootNode.getChild("Target1").getLocalTranslation().y-1 && quantidade == 2)
             {
                 System.out.println("Dentroooooooo");
+                 
                 points += 10;
                 RigidBodyControl r = rootNode.getChild("Dart").getControl(RigidBodyControl.class);
                 state.getPhysicsSpace().remove(r);
@@ -227,6 +275,7 @@ public class Main extends SimpleApplication implements PhysicsCollisionListener,
                 r = rootNode.getChild("Target").getControl(RigidBodyControl.class);
                 state.getPhysicsSpace().remove(r);
                 rootNode.detachChildNamed("Target");
+                
                 points += 10;
                 CreateAlvo("Target", 19, 19, 13, 13);
                 CreateDart(x, y, 8);
@@ -239,6 +288,7 @@ public class Main extends SimpleApplication implements PhysicsCollisionListener,
                 rootNode.detachChildNamed("Dart");
                 if(points > 0)
                     points -= 5;
+                
                 CreateDart(x, y, 8);
             }
         }
