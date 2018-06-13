@@ -40,7 +40,7 @@ public class Main extends SimpleApplication implements PhysicsCollisionListener,
     private boolean first = true;
     private int time = 4;
     private int quantidade = 1;
-    private int points = 10;
+    private int points = 15;
     private Spatial Target1, Target;
     private BitmapText texto ;
     private  BitmapText pontos;
@@ -447,7 +447,7 @@ public class Main extends SimpleApplication implements PhysicsCollisionListener,
         Box box = new Box(1, 1, 1);
         Geometry geom = new Geometry(name, box);
         Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        Texture t = assetManager.loadTexture("Target/Target.jpg");
+        Texture t = assetManager.loadTexture("Target/alvo.jpg");
         mat.setTexture("ColorMap", t);
         geom.setMaterial(mat);
         rootNode.attachChild(geom);
