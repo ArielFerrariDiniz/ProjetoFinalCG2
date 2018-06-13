@@ -37,9 +37,10 @@ public class Main extends SimpleApplication implements PhysicsCollisionListener,
     private boolean Left = false;
     private boolean Right = false;
     private boolean first = true;
-    private int time = 3;
+    private int time = 4;
     private int quantidade = 1;
     private int points = 120;
+    private Spatial Target1, Target;
 
     public static void main(String[] args) {
         Main app = new Main();
@@ -62,6 +63,9 @@ public class Main extends SimpleApplication implements PhysicsCollisionListener,
     @Override
     public void simpleUpdate(float tpf) {
         dartRigidBody.activate();
+        wallRigidBody.activate();
+        targetRigidBody.activate();
+        System.out.println(points);
         if (tiro)
             rootNode.getChild("Dart").move(0, 0, tpf * -45f);
         
@@ -82,22 +86,17 @@ public class Main extends SimpleApplication implements PhysicsCollisionListener,
         Vector3f v = new Vector3f(rootNode.getChild("Dart").getLocalTranslation().x+0.48f, rootNode.getChild("Dart").getLocalTranslation().y+0.65f, 10);
         cam.setLocation(v);
         
-        
-        if(points > 50 && points <= 100)
-            time = 2;
-        
+        if(points <= 50){
+            time = 4;
+            quantidade = 1;
+        }
+        if(points > 50 && points <= 100){
+            time = 3;
+            quantidade = 1;
+        }
         if(points > 100){
             time = 5;
             quantidade = 2;
-        }
-        
-        if(rootNode.getChild("Dart").getLocalTranslation().z < -50){
-            RigidBodyControl r = rootNode.getChild("Dart").getControl(RigidBodyControl.class);
-            state.getPhysicsSpace().remove(r);
-            float x = rootNode.getChild("Dart").getLocalTranslation().x;
-            float y = rootNode.getChild("Dart").getLocalTranslation().y;
-            rootNode.detachChildNamed("Dart");
-            CreateDart(x, y, 8);
         }
         
         com.jme3.system.Timer tempo = getTimer();
@@ -106,7 +105,10 @@ public class Main extends SimpleApplication implements PhysicsCollisionListener,
             state.getPhysicsSpace().remove(r);
             rootNode.detachChildNamed("Target");
             CreateAlvo("Target", 19, 19, 13, 13);
+            if(points > 0)
+                    points -= 5;
             tempo.reset();
+            first = true;
         }
         if (tempo.getTimeInSeconds() > time && quantidade == 2) {
             RigidBodyControl r = rootNode.getChild("Target").getControl(RigidBodyControl.class);
@@ -121,7 +123,89 @@ public class Main extends SimpleApplication implements PhysicsCollisionListener,
                 first = false;
             CreateAlvo("Target", 19, 1, 13, 1);
             CreateAlvo("Target1", 1, 19, 1, 13);
+            if(points > 0)
+                    points -= 10;
             tempo.reset();
+        }
+        
+        if(rootNode.hasChild(Target1) && quantidade == 1){
+            RigidBodyControl r = rootNode.getChild("Target1").getControl(RigidBodyControl.class);
+            state.getPhysicsSpace().remove(r);
+            rootNode.detachChildNamed("Target1");
+            if(points > 0)
+                points -= 5;
+        }
+        
+        if(!rootNode.hasChild(Target1) && quantidade == 2)
+            CreateAlvo("Target1", 1, 19, 1, 13);
+        
+        if(rootNode.getChild("Dart").getLocalTranslation().z < -50){
+            RigidBodyControl r = rootNode.getChild("Dart").getControl(RigidBodyControl.class);
+            state.getPhysicsSpace().remove(r);
+            float x = rootNode.getChild("Dart").getLocalTranslation().x;
+            float y = rootNode.getChild("Dart").getLocalTranslation().y;
+            rootNode.detachChildNamed("Dart");
+            if(points > 0)
+                points -= 5;
+            CreateDart(x, y, 8);
+        }
+        
+        if(rootNode.getChild("Dart").getLocalTranslation().z < rootNode.getChild("Target").getLocalTranslation().z && 
+                rootNode.getChild("Dart").getLocalTranslation().x+0.48 <= rootNode.getChild("Target").getLocalTranslation().x+1 &&
+                rootNode.getChild("Dart").getLocalTranslation().x+0.48 >= rootNode.getChild("Target").getLocalTranslation().x-1 &&
+                rootNode.getChild("Dart").getLocalTranslation().y+0.65 <= rootNode.getChild("Target").getLocalTranslation().y+1 &&
+                rootNode.getChild("Dart").getLocalTranslation().y+0.65 >= rootNode.getChild("Target").getLocalTranslation().y-1)
+        {
+            System.out.println("Dentroooooooo");
+            points += 10;
+            RigidBodyControl r = rootNode.getChild("Dart").getControl(RigidBodyControl.class);
+            state.getPhysicsSpace().remove(r);
+            float x = rootNode.getChild("Dart").getLocalTranslation().x;
+            float y = rootNode.getChild("Dart").getLocalTranslation().y;
+            rootNode.detachChildNamed("Dart");
+            r = rootNode.getChild("Target").getControl(RigidBodyControl.class);
+            state.getPhysicsSpace().remove(r);
+            rootNode.detachChildNamed("Target");
+            if(quantidade == 1)
+                CreateAlvo("Target", 19, 19, 13, 13);
+            else
+                CreateAlvo("Target", 19, 1, 13, 1);
+            if(rootNode.hasChild(Target1)){
+                r = rootNode.getChild("Target1").getControl(RigidBodyControl.class);
+                state.getPhysicsSpace().remove(r);
+                rootNode.detachChildNamed("Target1");
+                CreateAlvo("Target1", 1, 19, 1, 13);
+            }
+            CreateDart(x, y, 8);
+            tempo.reset();
+        }
+        else if(quantidade == 2){
+            if(rootNode.getChild("Dart").getLocalTranslation().z < rootNode.getChild("Target1").getLocalTranslation().z && 
+                    rootNode.getChild("Dart").getLocalTranslation().x+0.48 <= rootNode.getChild("Target1").getLocalTranslation().x+1 &&
+                    rootNode.getChild("Dart").getLocalTranslation().x+0.48 >= rootNode.getChild("Target1").getLocalTranslation().x-1 &&
+                    rootNode.getChild("Dart").getLocalTranslation().y+0.65 <= rootNode.getChild("Target1").getLocalTranslation().y+1 &&
+                    rootNode.getChild("Dart").getLocalTranslation().y+0.65 >= rootNode.getChild("Target1").getLocalTranslation().y-1 && quantidade == 2)
+            {
+                System.out.println("Dentroooooooo");
+                points += 10;
+                RigidBodyControl r = rootNode.getChild("Dart").getControl(RigidBodyControl.class);
+                state.getPhysicsSpace().remove(r);
+                float x = rootNode.getChild("Dart").getLocalTranslation().x;
+                float y = rootNode.getChild("Dart").getLocalTranslation().y;
+                rootNode.detachChildNamed("Dart");
+                r = rootNode.getChild("Target1").getControl(RigidBodyControl.class);
+                state.getPhysicsSpace().remove(r);
+                rootNode.detachChildNamed("Target1");
+                CreateAlvo("Target1", 1, 19, 1, 13);
+                if(rootNode.hasChild(Target)){
+                    r = rootNode.getChild("Target").getControl(RigidBodyControl.class);
+                    state.getPhysicsSpace().remove(r);
+                    rootNode.detachChildNamed("Target");
+                    CreateAlvo("Target", 19, 1, 13, 1);
+                }
+                CreateDart(x, y, 8);
+                tempo.reset();
+            }
         }
     }
 
@@ -132,6 +216,7 @@ public class Main extends SimpleApplication implements PhysicsCollisionListener,
 
     @Override
     public void collision(PhysicsCollisionEvent event) {
+        System.out.println(event.getNodeA().getName());
         if (event.getNodeA().getName().equals("Dart") || event.getNodeB().getName().equals("Dart")){
             if(event.getNodeA().getName().equals("Target") || event.getNodeB().getName().equals("Target")){
                 RigidBodyControl r = rootNode.getChild("Dart").getControl(RigidBodyControl.class);
@@ -139,6 +224,11 @@ public class Main extends SimpleApplication implements PhysicsCollisionListener,
                 float x = rootNode.getChild("Dart").getLocalTranslation().x;
                 float y = rootNode.getChild("Dart").getLocalTranslation().y;
                 rootNode.detachChildNamed("Dart");
+                r = rootNode.getChild("Target").getControl(RigidBodyControl.class);
+                state.getPhysicsSpace().remove(r);
+                rootNode.detachChildNamed("Target");
+                points += 10;
+                CreateAlvo("Target", 19, 19, 13, 13);
                 CreateDart(x, y, 8);
             }
             if(event.getNodeA().getName().equals("Wall") || event.getNodeB().getName().equals("Wall")){
@@ -147,6 +237,8 @@ public class Main extends SimpleApplication implements PhysicsCollisionListener,
                 float x = rootNode.getChild("Dart").getLocalTranslation().x;
                 float y = rootNode.getChild("Dart").getLocalTranslation().y;
                 rootNode.detachChildNamed("Dart");
+                if(points > 0)
+                    points -= 5;
                 CreateDart(x, y, 8);
             }
         }
@@ -303,5 +395,11 @@ public class Main extends SimpleApplication implements PhysicsCollisionListener,
         state.getPhysicsSpace().add(targetRigidBody);
                 
         targetRigidBody.setPhysicsLocation(geom.getLocalTranslation());
+        
+        if(name.equals("Target1"))
+            Target1 = geom;
+        
+        if(name.equals("Target"))
+            Target = geom;
     }
 }
