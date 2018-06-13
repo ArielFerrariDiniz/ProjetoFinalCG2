@@ -62,6 +62,7 @@ public class Main extends SimpleApplication implements PhysicsCollisionListener,
         createWall();
         CreateDart(-0.48f, -0.65f, +8);
         CreateAlvo("Target", 19, 19, 13, 13);
+        createFundo();
         
         
         
@@ -79,21 +80,21 @@ public class Main extends SimpleApplication implements PhysicsCollisionListener,
       rootNode.attachChild(pontos);
     texto.setName("texto");
     pontos.setName("pontos");
-    texto.setSize(10);      // font size
-    pontos.setSize(10); 
-    texto.setColor(ColorRGBA.White); 
-    pontos.setColor(ColorRGBA.White);    // font color
+    texto.setSize(5);      // font size
+    pontos.setSize(5); 
+    texto.setColor(ColorRGBA.Black); 
+    pontos.setColor(ColorRGBA.Black);    // font color
     texto.setText("Points : ");     
      pontos.setText(""+points);// the text
      if(rootNode.getChild("Dart").getLocalTranslation().y >-2)
      {
-    texto.setLocalTranslation(-30f,40f, -80f); // position
-    pontos.setLocalTranslation(10f, 40f,-80f);
+    texto.setLocalTranslation(-10f,20f, -34f); // position
+    pontos.setLocalTranslation(10f, 20f,-34f);
      }
      else
      {
-         texto.setLocalTranslation(-30f,-25f, -80f); // position
-        pontos.setLocalTranslation(10f, -25f,-80f);
+         texto.setLocalTranslation(-10f,-15f, -34f); // position
+        pontos.setLocalTranslation(10f, -15f,-34f);
      }
       
       
@@ -400,6 +401,20 @@ public class Main extends SimpleApplication implements PhysicsCollisionListener,
         state.getPhysicsSpace().add(wallRigidBody);
                 
         wallRigidBody.setPhysicsLocation(geom.getLocalTranslation());
+    
+    }
+        private void createFundo() {
+        Box box = new Box(70, 70, 0);
+        Geometry geom = new Geometry("Fundo", box);
+        Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        Texture t = assetManager.loadTexture("Fundo/nuvem.jpg");
+        mat.setTexture("ColorMap", t);
+        geom.setMaterial(mat);
+        geom.setLocalTranslation(0, 0, -40);
+        
+       
+        rootNode.attachChild(geom);
+     
     }
     
     public void CreateDart(float x, float y, float z) {
