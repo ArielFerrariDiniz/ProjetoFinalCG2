@@ -40,7 +40,7 @@ public class Main extends SimpleApplication implements PhysicsCollisionListener,
     private boolean first = true;
     private int time = 4;
     private int quantidade = 1;
-    private int points = 15;
+    private int points = 10;
     private Spatial Target1, Target;
     private BitmapText texto ;
     private  BitmapText pontos;
